@@ -47,16 +47,18 @@ Artisan::command('1b', function () {
         ->trim()
         ->explode(PHP_EOL)
         ->map(function (string $line) {
-            return str($line)
-                ->replace('one', 'one1one')
-                ->replace('two', 'two2two')
-                ->replace('three', 'three3three')
-                ->replace('four', 'four4four')
-                ->replace('five', 'five5five')
-                ->replace('six', 'six6six')
-                ->replace('seven', 'seven7seven')
-                ->replace('eight', 'eight8eight')
-                ->replace('nine', 'nine9nine');
+            $replacements = [
+                'one' => 'one1one',
+                'two' => 'two2two',
+                'three' => 'three3three',
+                'four' => 'four4four',
+                'five' => 'five5five',
+                'six' => 'six6six',
+                'seven' => 'seven7seven',
+                'eight' => 'eight8eight',
+                'nine' => 'nine9nine',
+            ];
+            return str($line)->replace(array_keys($replacements), array_values($replacements));
         })
         ->map(function (string $line) {
             return collect(str_split($line));
