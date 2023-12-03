@@ -4,6 +4,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Arr;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,6 +73,43 @@ Artisan::command('1b', function () {
         ->map(fn (Collection $line) => $line->join(''))
         ->map(fn (string $calibrationValue) => (int)$calibrationValue)
         ->sum();
+
+    dd($result);
+});
+
+Artisan::command('2a', function () {
+    $input = Storage::disk('local')->get('2/a.txt');
+    $result = str($input)
+        ->trim()
+        ->explode(PHP_EOL)
+        ->mapWithKeys(function (string $line) {
+            $gameNumber = str($line)->remove('Game ')->explode(': ')->first();
+            $game = str($line)->remove('Game ')->explode(': ')->last();
+            return [$gameNumber => $game];
+        })
+        ->map(function (string $game) {
+            return str($game)
+                ->explode('; ')
+                ->map(function (string $hand) {
+                    return str($hand)->explode(', ')
+                        ->map(function (string $card) {
+                            return str($card)->explode(' ');
+                        })
+                        ->reduce(function (Collection $hand, Collection $card) {
+                            $hand[$card[1]] = (int)$card[0] + ($hand[$card[1]] ?? 0);
+                            return $hand;
+                        }, collect());
+                })
+                ->reduce(function (Collection $biggest, Collection $hand) {
+                    $biggestHand = collect([
+                        'red' => ($biggest['red'] ?? 0) > ($hand['red'] ?? 0) ? ($biggest['red'] ?? 0) : ($hand['red'] ?? 0),
+                        'blue' => ($biggest['blue'] ?? 0) > ($hand['blue'] ?? 0) ? ($biggest['blue'] ?? 0) : ($hand['blue'] ?? 0),
+                        'green' => ($biggest['green'] ?? 0) > ($hand['green'] ?? 0) ? ($biggest['green'] ?? 0) : ($hand['green'] ?? 0),
+                    ]);
+                    return $biggestHand;
+                }, collect());
+        })
+        ;
 
     dd($result);
 });
